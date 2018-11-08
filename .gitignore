@@ -1,0 +1,6 @@
+*.pem
+.terraform
+*.tfvars
+*.tfstate*
+*.tfplan
+properties.yml

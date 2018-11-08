@@ -1,0 +1,41 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+sub wrap {
+	my ($v, $k, @k) = @_;
+	return { $k => (@k ? wrap($v, @k) : $v) };
+}
+sub merge {
+	my ($a, $b) = @_;
+	for my $k (keys %$b) {
+		if (ref $a->{$k} && ref $b->{$k}) {
+			merge($a->{$k}, $b->{$k});
+		} else {
+			$a->{$k} = $b->{$k};
+		}
+	}
+}
+sub yaml {
+	my ($o, $pre) = @_;
+	for my $k (keys %$o) {
+		print "$pre$k:";
+		if (ref($o->{$k})) {
+			print "\n";
+			yaml($o->{$k}, "$pre  ");
+		} else {
+			print " $o->{$k}\n";
+		}
+	}
+}
+
+my $prefix = join('.', @ARGV);
+$prefix = "meta" unless $prefix;
+my $DATA = {};
+while (<STDIN>) {
+	chomp;
+	my ($key, $value) = split /\s+=\s+/, "$prefix.$_";
+	merge($DATA, wrap($value, split(/\./, $key)));
+}
+
+yaml($DATA, '');

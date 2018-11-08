@@ -1,0 +1,73 @@
+meta:
+  net:
+    lab: (( grab meta.tf.aws.network.lab ))
+
+azs:
+  - name: z1
+    cloud_properties:
+      availability_zone: (( grab meta.tf.cc.z1 ))
+
+networks:
+  - name: bosh
+    type: manual
+    subnets:
+      - range:   (( concat meta.net.lab.cidr ))
+        gateway: (( concat meta.net.lab.gw ))
+        dns:     [(( concat meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.lab.prefix ".2 - " meta.net.lab.prefix ".5" ))
+          - (( concat meta.net.lab.prefix ".8 - " meta.net.lab.prefix ".254" ))
+        static:
+          - (( concat meta.net.lab.prefix ".4" ))
+
+  - name: default
+    type: manual
+    subnets:
+      - range:   (( concat meta.net.lab.cidr ))
+        gateway: (( concat meta.net.lab.gw ))
+        dns:     [(( concat meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.lab.prefix ".2 - " meta.net.lab.prefix ".127" ))
+        static:
+          - (( concat meta.net.lab.prefix ".128 - " meta.net.lab.prefix  ".191" ))
+
+compilation:
+  az: z1
+  network: default
+  reuse_compilation_vms: true
+  vm_type: large
+  workers: 5
+
+disk_types:
+  - name: default
+    disk_size: 8192
+    cloud_properties:
+      type: gp2
+
+vm_types:
+  - name: default
+    cloud_properties:
+      instance_type: t3.small
+      ephemeral_disk:
+        type: gp2
+        size: 8192
+  - name: small
+    cloud_properties:
+      instance_type: t3.small
+      ephemeral_disk:
+        type: gp2
+        size: 4096
+  - name: medium
+    cloud_properties:
+      instance_type: t3.medium
+      ephemeral_disk:
+        type: gp2
+        size: 16384
+  - name: large
+    cloud_properties:
+      instance_type: t3.large
+      ephemeral_disk:
+        type: gp2
+        size: 32767

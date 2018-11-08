@@ -1,0 +1,17 @@
+#!/bin/bash
+set -eu
+
+if [[ ! -f properties.yml ]]; then
+  echo >&2 "First, you must run \`make' to Terraform AWS"
+  exit 1
+fi
+
+bastion_ip=$(cat properties.yml | spruce json | jq -r '.meta.tf.box.bastion.public')
+sshkey=$(cat properties.yml | spruce json | jq -r '.meta.tf.box.bastion.keyfile')
+
+echo
+echo "To access the bastion host:"
+echo
+echo "  ssh -i $sshkey ubuntu@$bastion_ip"
+echo
+exit 0
