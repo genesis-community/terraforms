@@ -224,6 +224,10 @@ resource "aws_instance" "bastion" {
     source      = "files/gitconfig"
     destination = "/home/ubuntu/.gitconfig"
   }
+  provisioner "file" {
+    source      = "files/tmux.conf"
+    destination = "/home/ubuntu/.tmux.conf"
+  }
 }
 
 output "box.bastion.public" {
