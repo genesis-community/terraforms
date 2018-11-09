@@ -115,9 +115,10 @@ resource "aws_route_table" "internal" {
   }
 }
 
-output "cc.net" { value = "${var.network}" }
-output "cc.dns" { value = "${var.network}.0.2" }
-output "cc.z1"  { value = "${var.aws_region}${var.aws_az1}" }
+output "cc.net"    { value = "${var.network}" }
+output "cc.dns"    { value = "${var.network}.0.2" }
+output "cc.z1"     { value = "${var.aws_region}${var.aws_az1}" }
+output "cc.region" { value = "${var.aws_region}" }
 
 
 

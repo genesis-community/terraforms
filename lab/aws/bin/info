@@ -7,8 +7,23 @@ if [[ ! -f properties.yml ]]; then
 fi
 
 bastion_ip=$(cat properties.yml | spruce json | jq -r '.meta.tf.box.bastion.public')
-sshkey=$(cat properties.yml | spruce json | jq -r '.meta.tf.box.bastion.keyfile')
+sshkey=$(    cat properties.yml | spruce json | jq -r '.meta.tf.box.bastion.keyfile')
+net=$(       cat properties.yml | spruce json | jq -r '.meta.tf.cc.net')
+aws_region=$(cat properties.yml | spruce json | jq -r '.meta.tf.cc.region')
+subnet=$(    cat properties.yml | spruce json | jq -r '.meta.tf.aws.network.lab.subnet')
 
+echo
+echo "For configuring your proto-BOSH:"
+echo
+echo "  Static IP:       $net.0.4"
+echo "  Subnet (CIDR):   $net.0.0/24"
+echo "  Gateway:         $net.0.1"
+echo "  DNS:             $net.0.2"
+echo
+echo "  AWS Region:      $aws_region"
+echo "  VM Sec. Group:   open-lab"
+echo "  BOSH Sec. Group: open-lab"
+echo "  Subnet ID:       $subnet"
 echo
 echo "To access the bastion host:"
 echo
