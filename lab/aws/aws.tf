@@ -7,10 +7,9 @@ variable "aws_secret_key" {} # Your Secret Access Key                   (require
 variable "aws_vpc_name"   {} # Name of your VPC                         (required)
 variable "aws_key_name"   {} # Name of EC2 Keypair                      (required)
 variable "aws_key_file"   {} # Location of the private EC2 Keypair file (required)
+variable "aws_region"     {} # AWS Region                               (required)
 
-variable "aws_region"     { default = "us-west-2" } # AWS Region
 variable "network"        { default = "10.4" }      # First 2 octets of your /16
-
 variable "aws_az1"        { default = "a" }
 
 #

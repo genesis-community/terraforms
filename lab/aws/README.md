@@ -27,6 +27,7 @@ the AWS environment you want to deploy.  Here's an example:
 ```
 aws_access_key = "..."
 aws_secret_key = "..."
+aws_region     = "us-west-2"
 aws_vpc_name   = "jhunt-genesis-lab1"
 aws_key_name   = "jhunt-demos"
 aws_key_file   = "jhunt-demos.pem"
@@ -152,8 +153,8 @@ The following Terraform variables can be set.
 - `aws_key_file` (**required**) - The path (locally) to the
   private key component of the EC2 Key Pair.
 
-- `aws_region` - The name of the AWS Region you want to deploy to.
-  Defaults to **us-west-2**.
+- `aws_region` (**required**) - The name of the AWS Region you
+  want to deploy to.
 
 - `network` - The first 2 octets of the /16 network you wish to
   set up in your VPC.  Defaults to **10.4**, for a 10.4.0.0/16
