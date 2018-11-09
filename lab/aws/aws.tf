@@ -221,6 +221,10 @@ resource "aws_instance" "bastion" {
         private_key = "${file("${var.aws_key_file}")}"
     }
   }
+  provisioner "file" {
+    source      = "files/gitconfig"
+    destination = "/home/ubuntu/.gitconfig"
+  }
 }
 
 output "box.bastion.public" {
