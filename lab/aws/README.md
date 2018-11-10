@@ -35,8 +35,8 @@ aws_key_file   = "jhunt-demos.pem"
 
 You're going to want to put your AWS Access Key (AKI) and Secret
 Key ID values in this file.  By default, `*.tfvars` files are
-ignored by the git configuration in this repo, so you should be
-ok.
+ignored by the git configuration in this repository, so you should
+be OK.
 
 The value of the `aws_vpc_name` variable is entirely up to you.
 All of the things that this Terraform configuration creates will
@@ -64,15 +64,15 @@ download the private key file, in PEM format:
 
 ![Downloading the Private Key](docs/ec2-download-key.png)
 
-_This is the oly opportunity you will have to obtain the private
+_This is the only opportunity you will have to obtain the private
 key.  **Put this file in a safe, secure location!** If you
 misplace it, you will have to generate a new key pair._
 
 Finally, back in `aws.tfvars`, set the `aws_key_name` to the name
 you chose on the **Create Key Pair** screen, and set the
 `aws_key_file` variable to the path to the private key PEM file.
-The git repo also ignores `*.pem` files by default, so you can
-place the private key in the working directory.
+The git repository also ignores `*.pem` files by default, so you
+can place the private key in the working directory.
 
 To deploy, run:
 
@@ -118,7 +118,7 @@ bosh -e your-director update-cloud-config <(make cc)
 Tearing It All Down
 -------------------
 
-When oyu are all done with your lab, you can tear down all the
+When you are all done with your lab, you can tear down all the
 bits that Terraform configured with a single command:
 
 ```
@@ -127,7 +127,7 @@ $ make destroy
 
 **Note**: this will only remove what Terraform deployed, i.e. the
 bastion host, the VPC, the subnet, the default security group, and
-routing configuration.  You will need to teardown any deployments
+routing configuration.  You will need to tear down any deployments
 you've done or custom EC2/VPC additions made out-of-band.
 
 
