@@ -1,0 +1,15 @@
+## Required
+aws_access_key = "KEY"
+aws_secret_key = "secret"
+aws_vpc_name   = "vpc-name"
+aws_key_name   = "key-name-in-console"
+aws_key_file   = "/path/to/ssh/file.pem"
+
+## Options
+# aws_region   = "us-west-2"
+# network      = "10.4"
+
+## Availability Zones
+# aws_az1      = "a"
+# aws_az2      = "b"
+# aws_az3      = "c"

@@ -1,0 +1,100 @@
+meta:
+  net:
+    ops: (( grab meta.tf.aws.network.ops ))
+    c1:  (( grab meta.tf.aws.network.concourse1 ))
+    c2:  (( grab meta.tf.aws.network.concourse2 ))
+    c3:  (( grab meta.tf.aws.network.concourse3 ))
+
+azs:
+  - name: z1
+    cloud_properties:
+      availability_zone: (( grab meta.tf.cc.z1 ))
+
+networks:
+  - name: bosh
+    type: manual
+    subnets:
+      - range:   (( grab meta.net.ops.cidr ))
+        gateway: (( grab meta.net.ops.gw ))
+        dns:     [(( grab meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.ops.prefix ".2 - " meta.net.ops.prefix ".5" ))
+          - (( concat meta.net.ops.prefix ".8 - " meta.net.ops.prefix ".254" ))
+        static:
+          - (( concat meta.net.ops.prefix ".4" ))
+
+  - name: default
+    type: manual
+    subnets:
+      - range:   (( grab meta.net.ops.cidr ))
+        gateway: (( grab meta.net.ops.gw ))
+        dns:     [(( grab meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.ops.prefix ".2 - " meta.net.ops.prefix ".127" ))
+        static:
+          - (( concat meta.net.ops.prefix ".128 - " meta.net.ops.prefix  ".191" ))
+
+  - name: concourse
+    type: manual
+    subnets:
+      - range:    (( grab meta.net.c1.cidr ))
+        gateway:  (( grab meta.net.c1.gw ))
+        dns:      [(( grab meta.tf.cc.dns ))]
+        azs:      [z1]
+        reserved: [(( concat meta.net.c1.prefix ".2 - " meta.net.c1.prefix ".3" ))]
+        static:   [(( concat meta.net.c1.prefix ".4 - " meta.net.c1.prefix ".9" ))]
+
+      - range:    (( grab meta.net.c2.cidr ))
+        gateway:  (( grab meta.net.c2.gw ))
+        dns:      [(( grab meta.tf.cc.dns ))]
+        azs:      [z2]
+        reserved: [(( concat meta.net.c2.prefix ".66 - " meta.net.c2.prefix ".67" ))]
+        static:   [(( concat meta.net.c2.prefix ".68 - " meta.net.c2.prefix ".73" ))]
+
+      - range:    (( grab meta.net.c3.cidr ))
+        gateway:  (( grab meta.net.c3.gw ))
+        dns:      [(( grab meta.tf.cc.dns ))]
+        azs:      [z3]
+        reserved: [(( concat meta.net.c3.prefix ".130 - " meta.net.c3.prefix ".131" ))]
+        static:   [(( concat meta.net.c3.prefix ".132 - " meta.net.c3.prefix ".137" ))]
+
+compilation:
+  az: z1
+  network: default
+  reuse_compilation_vms: true
+  vm_type: large
+  workers: 5
+
+disk_types:
+  - name: default
+    disk_size: 8192
+    cloud_properties:
+      type: gp2
+
+vm_types:
+  - name: default
+    cloud_properties:
+      instance_type: t2.small
+      ephemeral_disk:
+        type: gp2
+        size: 8192
+  - name: small
+    cloud_properties:
+      instance_type: t2.small
+      ephemeral_disk:
+        type: gp2
+        size: 4096
+  - name: medium
+    cloud_properties:
+      instance_type: t2.medium
+      ephemeral_disk:
+        type: gp2
+        size: 16384
+  - name: large
+    cloud_properties:
+      instance_type: t2.large
+      ephemeral_disk:
+        type: gp2
+        size: 32767

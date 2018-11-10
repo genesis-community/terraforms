@@ -6,7 +6,7 @@ Genesis installations up and running on various IaaSes.
 
   - Amazon Web Services
     - [Lab Environment](lab/aws)
-    - Training Environment (coming soon!)
+    - [Training Environment](training/aws)
     - (Prod) Operations Tier (coming soon!)
 
   - Google Cloud Platform
