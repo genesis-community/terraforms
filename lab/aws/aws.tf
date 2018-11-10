@@ -224,10 +224,20 @@ resource "aws_instance" "bastion" {
   provisioner "file" {
     source      = "files/gitconfig"
     destination = "/home/ubuntu/.gitconfig"
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        private_key = "${file("${var.aws_key_file}")}"
+    }
   }
   provisioner "file" {
     source      = "files/tmux.conf"
     destination = "/home/ubuntu/.tmux.conf"
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        private_key = "${file("${var.aws_key_file}")}"
+    }
   }
 }
 
