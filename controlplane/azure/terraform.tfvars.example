@@ -1,0 +1,9 @@
+subscription_id = "01234567-89ab-cdef-0123-456789abcdef"
+tenant_id       = "01234567-89ab-cdef-0123-456789abcdef"
+client_id       = "01234567-89ab-cdef-0123-456789abcdef"
+client_secret   = "aBcDEfgHiJKlmNoPqRSTuVwXyz"
+starting_address = "10.0.0.0"
+location = "East US"
+dns_servers = [ "1.1.1.1", "1.0.0.1" ]
+ssh_keys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjdblhBtPpBm9T13wWtHBIYKKUPWQdPftnFTS6nhkmQm7/F5SoqikIggMDntYGFPB6dIELaPN8bi2YvzFEpQPA7t5Z8Z72jbKKpp7OSP3zhMk3Y/fHOMspu1pbnVPXefuc3Di8Pe6gmcbgTZho21ak/BXAODV4k0rPHfz52BAyQ0/lbZzj1j2BLWuD9We0jW5kDBCCPT62pW8q6zV3eeAY1LuwAXJtV5wzdiy9fFTquiSKlE1FUzzxjow/W9RDOWDCn/QszZ04rSq1SnA5aqo6yWZe1jZRm385PsWeQo2HbH0zzEpgdfihqdUr8Iiy06rDCfUz7oRu2GSyTiSZlpwF" ]
+resource_group_name = "genesis"
