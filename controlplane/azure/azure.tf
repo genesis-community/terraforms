@@ -46,7 +46,7 @@ variable "ssh_keys" {
   description = "A list of SSH public keys to put in the authorized_keys file of the jumpbox"
 }
 
-variable bastion-username {
+variable "bastion_username" {
 	type = string
   description = "The admin username for the bastion box to be created"
   default = "ubuntu"
@@ -185,17 +185,20 @@ resource "azurerm_virtual_machine" "bastion" {
   }
 
   os_profile {
-    admin_username = "${var.bastion-username}"
+    admin_username = "${var.bastion_username}"
     computer_name  = "bastion"
   }
 
   os_profile_linux_config {
     disable_password_authentication = true
 
-    ssh_keys {
-      key_data = file("~/.ssh/id_rsa.pub")
-      path     = "/home/${var.bastion-username}/.ssh/authorized_keys"
-    }
+    dynamic "ssh_keys" {
+			for_each = var.ssh_keys
+      content {
+				key_data = ssh_keys.value
+        path     = "/home/${var.bastion_username}/.ssh/authorized_keys"
+      }
+		}   
   }
 }
 
@@ -204,5 +207,5 @@ output "bastion-box-ip-address" {
 }
 
 output "bastion-box-username" {
-	value = var.bastion-username
+	value = var.bastion_username
 }
