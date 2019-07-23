@@ -209,3 +209,35 @@ output "bastion-box-ip-address" {
 output "bastion-box-username" {
 	value = var.bastion_username
 }
+
+output "resource-group-name" {
+	value = azurerm_resource_group.rg.name
+}
+
+output "network-security-group-name" {
+	value = azurerm_network_security_group.controlplane.name
+}
+
+output "virtual-network-name" {
+	value = azurerm_virtual_network.network.name
+}
+
+output "subnet-name" {
+	value = azurerm_subnet.controlplane.name
+}
+
+output "subnet-CIDR" {
+	value = azurerm_subnet.controlplane.address_prefix
+}
+
+output "subnet-gateway" {
+	value = join(".", concat(slice(split(".", "${var.starting_address}"), 0, 3), ["1"]))
+}
+
+output "recommended-BOSH-director-IP" {
+  value = join(".", concat(slice(split(".", "${var.starting_address}"), 0, 3), ["5"]))
+}
+
+output "dns-servers" {
+	value = var.dns_servers
+}
