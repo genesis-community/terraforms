@@ -1,0 +1,9 @@
+meta:
+  vnet:
+    name: genesis-network
+  subnet:
+    name: genesis-subnet
+  dns_servers:
+  - 1.1.1.1
+  - 1.0.0.1
+  ip_prefix: "10.0.0."

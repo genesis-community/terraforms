@@ -1,0 +1,143 @@
+meta:
+  vnet:
+    name: (( param "Please specify the virtual network name" ))
+  subnet:
+    name: (( param "Please specify the name of the controlplane subnet" ))
+    range: (( concat meta.ip_prefix "0/24"  ))
+  dns_servers: (( param "Please give an array of dns servers" ))
+
+  ip_prefix: (( param "Please give the first three octets of the /24 subnet as 'x.x.x.'" ))
+
+  boilerplate:
+    type: manual
+    subnets:
+    - azs: [z1]
+      cloud_properties:
+        virtual_network_name: (( grab meta.vnet.name ))
+        subnet_name: (( grab meta.subnet.name ))
+      dns: (( grab meta.dns_servers ))
+      range: (( grab meta.subnet.range ))
+
+azs:
+- name: z1
+
+compilation:
+  workers: 4
+  vm_type: compilation
+  network: compilation
+  az: z1
+  reuse_compilation_vms: true
+
+networks:
+- name: vault 
+  <: (( inject meta.boilerplate ))
+  subnets:
+    reserved: 
+    - (( concat meta.ip_prefix "0 - " meta.ip_prefix "7" ))
+    - (( concat meta.ip_prefix "12 - " meta.ip_prefix "255" ))
+    static: 
+    - (( concat meta.ip_prefix "8 - " meta.ip_prefix "11" ))
+
+- name: jumpbox
+  <: (( inject meta.boilerplate ))
+  subnets:
+    reserved:
+    - (( concat meta.ip_prefix "0 - " meta.ip_prefix "11" ))
+    - (( concat meta.ip_prefix "16 - " meta.ip_prefix "255" ))
+    static:
+    - (( concat meta.ip_prefix "12 - " meta.ip_prefix "15" ))
+
+- name: prometheus
+  <: (( inject meta.boilerplate ))
+  subnets:
+    reserved:
+    - (( concat meta.ip_prefix "0 - " meta.ip_prefix "15" ))
+    - (( concat meta.ip_prefix "20 - " meta.ip_prefix "255" ))
+    static:
+    - (( concat meta.ip_prefix "16" ))
+
+- name: shield
+  <: (( inject meta.boilerplate ))
+  subnets:
+    reserved:
+    - (( concat meta.ip_prefix "0 - " meta.ip_prefix "19" ))
+    - (( concat meta.ip_prefix "24 - " meta.ip_prefix "255" ))
+    static:
+    - (( concat meta.ip_prefix "20" ))
+
+- name: concourse
+  <: (( inject meta.boilerplate ))
+  subnets:
+    reserved:
+    - (( concat meta.ip_prefix "0 - " meta.ip_prefix "23" ))
+    - (( concat meta.ip_prefix "32 - " meta.ip_prefix "255" ))
+    static:
+    - (( concat meta.ip_prefix "20 - " meta.ip_prefix "23" ))
+
+- name: compilation
+  <: (( inject meta.boilerplate ))
+  subnets:
+    reserved:
+    - (( concat meta.ip_prefix "0 - " meta.ip_prefix "247" ))
+    - (( concat meta.ip_prefix "255" ))
+
+vm_types:
+- name: compilation
+  cloud_properties:
+    instance_type: Standard_F4
+
+- name: xsmall
+  cloud_properties:
+    instance_type: Standard_A1_v2
+
+- name: small
+  cloud_properties:
+    instance_type: Standard_A2_v2
+
+- name: medium
+  cloud_properties: 
+    instance_type: Standard_D2_v3
+
+- name: large
+  cloud_properties:
+    instance_type: Standard_D4_v3
+
+- name: xlarge
+  cloud_properties:
+    instance_type: Standard_D8_v3
+
+- name: huge
+  cloud_properties:
+    instance_type: Standard_D16_v3
+
+- name: concourse-worker
+  cloud_properties:
+    instance_type: Standard_D4_v3
+    ephemeral_disk: 
+      size: 51200
+
+vm_extensions:
+- name: vault_as
+  cloud_properties:
+    availability_set: controlplane-vault
+
+disk_types:
+- name: vault
+  disk_size: 10240
+  cloud_properties:
+    storage_account_type: Standard_LRS
+
+- name: prometheus
+  disk_size: 20480
+  cloud_properties:
+    storage_account_type: Standard_LRS
+
+- name: shield
+  disk_size: 10240
+  cloud_properties:
+    storage_account_type: Standard_LRS
+
+- name: bosh
+  disk_size: 51200
+  cloud_properties:
+    storage_account_type: Standard_LRS
