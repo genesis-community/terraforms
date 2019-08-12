@@ -41,60 +41,60 @@ variable "dns_servers" {
   default = ["1.1.1.1", "1.0.0.1"]
 }
 
-variable "ssh_keys" {
-	type = list(string)
-  description = "A list of SSH public keys to put in the authorized_keys file of the jumpbox"
-}
-
 variable "bastion_username" {
 	type = string
   description = "The admin username for the bastion box to be created"
   default = "ubuntu"
 }
 
+resource "random_string" "bastion_password" {
+  length  = 32
+	special = false
+}
+
 provider "azurerm" {
-  subscription_id = "${var.subscription_id}"
-  tenant_id       = "${var.tenant_id}"
-  client_id       = "${var.client_id}"
-  client_secret   = "${var.client_secret}"
+  subscription_id = var.subscription_id
+  tenant_id       = var.tenant_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "${var.resource_group_name}"
-  location = "${var.location}"
+  name     = var.resource_group_name
+  location = var.location
 }
 
 resource "azurerm_virtual_network" "network" {
   name          = "${var.resource_group_name}-network"
-  location      = "${azurerm_resource_group.rg.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  location      = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
   address_space = ["${var.starting_address}/16"]
   dns_servers   = var.dns_servers
 }
 
 resource "azurerm_network_security_group" "controlplane" {
   name                = "${var.resource_group_name}-sg"
-  location            = "${azurerm_resource_group.rg.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 }
 
 resource "azurerm_subnet" "controlplane" {
   name                 = "${var.resource_group_name}-controlplane-subnet"
-  resource_group_name  = "${azurerm_resource_group.rg.name}"
-  virtual_network_name = "${azurerm_virtual_network.network.name}"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.network.name
   address_prefix       = "${var.starting_address}/24"
-  network_security_group_id = "${azurerm_network_security_group.controlplane.id}"
+  network_security_group_id = azurerm_network_security_group.controlplane.id
 }
 
 resource "azurerm_subnet_network_security_group_association" "controlplane" {
-  subnet_id   = "${azurerm_subnet.controlplane.id}"
-  network_security_group_id = "${azurerm_network_security_group.controlplane.id}"  
+  subnet_id                 = azurerm_subnet.controlplane.id
+  network_security_group_id = azurerm_network_security_group.controlplane.id
 }
 
 resource "azurerm_public_ip" "bastion" {
   name                = "${var.resource_group_name}-bastion-public-ip"
-  location            = "${azurerm_resource_group.rg.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
 }
 
@@ -104,35 +104,35 @@ locals {
 
 resource "azurerm_network_interface" "bastion" {
   name                = "${var.resource_group_name}-bastion"
-  location            = "${azurerm_resource_group.rg.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
-  network_security_group_id = "${azurerm_network_security_group.controlplane.id}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  network_security_group_id = azurerm_network_security_group.controlplane.id
   
   ip_configuration {
-    name                 = "${local.bastion-ip-configuration-name}"
-    subnet_id            = "${azurerm_subnet.controlplane.id}"
+    name                 = local.bastion-ip-configuration-name
+    subnet_id            = azurerm_subnet.controlplane.id
     private_ip_address_allocation = "Static"
-    private_ip_address   = join(".", concat(slice(split(".", "${var.starting_address}"), 0, 3), ["4"]))
-    public_ip_address_id = "${azurerm_public_ip.bastion.id}"
+    private_ip_address   = join(".", concat(slice(split(".", var.starting_address), 0, 3), ["4"]))
+    public_ip_address_id = azurerm_public_ip.bastion.id
   }
 }
 
 resource "azurerm_application_security_group" "bastion" {
   name                = "${var.resource_group_name}-bastion-asg"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
-  location            = "${azurerm_resource_group.rg.location}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
 }
 
 resource "azurerm_network_interface_application_security_group_association" "bastion-asg-nic" {
-  network_interface_id          = "${azurerm_network_interface.bastion.id}"
-  ip_configuration_name         = "${local.bastion-ip-configuration-name}"
-  application_security_group_id = "${azurerm_application_security_group.bastion.id}"
+  network_interface_id          = azurerm_network_interface.bastion.id
+  ip_configuration_name         = local.bastion-ip-configuration-name
+  application_security_group_id = azurerm_application_security_group.bastion.id
 }
 
 resource "azurerm_network_security_rule" "allow-bastion-access" {
   name                       = "allow-bastion-access"
-  resource_group_name        = "${azurerm_resource_group.rg.name}"
-  network_security_group_name = "${azurerm_network_security_group.controlplane.name}"
+  resource_group_name        = azurerm_resource_group.rg.name
+  network_security_group_name = azurerm_network_security_group.controlplane.name
 
   priority                   = 100
   direction                  = "Inbound"
@@ -141,13 +141,13 @@ resource "azurerm_network_security_rule" "allow-bastion-access" {
   source_port_range          = "*"
   destination_port_range     = "22"
   source_address_prefix      = "*"
-  destination_application_security_group_ids = ["${azurerm_application_security_group.bastion.id}"]
+  destination_application_security_group_ids = [ azurerm_application_security_group.bastion.id ]
 }
 
 resource "azurerm_managed_disk" "bastion-data" {
   name                 = "${var.resource_group_name}-bastion-data-disk"
-  location             = "${azurerm_resource_group.rg.location}"
-  resource_group_name  = "${azurerm_resource_group.rg.name}"
+  location             = azurerm_resource_group.rg.location
+  resource_group_name  = azurerm_resource_group.rg.name
   disk_size_gb         = "50"
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
@@ -155,11 +155,12 @@ resource "azurerm_managed_disk" "bastion-data" {
 
 resource "azurerm_virtual_machine" "bastion" {
   name                  = "${var.resource_group_name}-bastion"
-  location              = "${azurerm_resource_group.rg.location}"
-  resource_group_name   = "${azurerm_resource_group.rg.name}"
+  location              = azurerm_resource_group.rg.location
+  resource_group_name   = azurerm_resource_group.rg.name
 
-  vm_size               = "Standard_A2_v2"
-  network_interface_ids = ["${azurerm_network_interface.bastion.id}"]
+  vm_size                       = "Standard_A2_v2"
+  network_interface_ids         = [ azurerm_network_interface.bastion.id ]
+  delete_os_disk_on_termination = true
   
   storage_image_reference {
     publisher = "Canonical"
@@ -177,28 +178,51 @@ resource "azurerm_virtual_machine" "bastion" {
   }
 
   storage_data_disk {
-    name            = "${azurerm_managed_disk.bastion-data.name}"
+    name            = azurerm_managed_disk.bastion-data.name
     lun             = 0
     create_option   = "Attach"
-    disk_size_gb    = "${azurerm_managed_disk.bastion-data.disk_size_gb}"
-    managed_disk_id = "${azurerm_managed_disk.bastion-data.id}"
+    disk_size_gb    = azurerm_managed_disk.bastion-data.disk_size_gb
+    managed_disk_id = azurerm_managed_disk.bastion-data.id
   }
 
   os_profile {
-    admin_username = "${var.bastion_username}"
+    admin_username = var.bastion_username
+    admin_password = random_string.bastion_password.result
     computer_name  = "bastion"
   }
 
   os_profile_linux_config {
-    disable_password_authentication = true
+    disable_password_authentication = false
+  }
 
-    dynamic "ssh_keys" {
-			for_each = var.ssh_keys
-      content {
-				key_data = ssh_keys.value
-        path     = "/home/${var.bastion_username}/.ssh/authorized_keys"
-      }
-		}   
+	provisioner "remote-exec" {
+    connection {
+			type = "ssh"
+      host = azurerm_public_ip.bastion.ip_address
+      user = var.bastion_username
+      password = random_string.bastion_password.result
+    }
+
+		inline = [
+			"cd $HOME",
+			"git clone https://github.com/genesis-community/terraforms.git",
+			"yes | terraforms/bin/install_toolchain.sh",
+			"mkdir -p deployments/director-configs",
+<<ENDSTRING
+bash -c 'spruce merge ~/terraforms/controlplane/azure/cloud_config.yml >deployments/director-configs/controlplane.yml <(cat <<EOF
+---
+meta:
+  vnet:
+    name: ${azurerm_virtual_network.network.name}
+  subnet:
+    name: ${azurerm_subnet.controlplane.name}
+  dns_servers: ["${join("\", \"", var.dns_servers)}"]
+  ip_prefix: ${join(".", concat(slice(split(".", var.starting_address), 0, 3), [""]))}
+EOF
+)'
+ENDSTRING
+,
+    ]
   }
 }
 
@@ -208,6 +232,10 @@ output "bastion-box-ip-address" {
 
 output "bastion-box-username" {
 	value = var.bastion_username
+}
+
+output "bastion-box-password" {
+  value = random_string.bastion_password.result
 }
 
 output "resource-group-name" {
@@ -231,11 +259,11 @@ output "subnet-CIDR" {
 }
 
 output "subnet-gateway" {
-	value = join(".", concat(slice(split(".", "${var.starting_address}"), 0, 3), ["1"]))
+	value = join(".", concat(slice(split(".", var.starting_address), 0, 3), ["1"]))
 }
 
 output "recommended-BOSH-director-IP" {
-  value = join(".", concat(slice(split(".", "${var.starting_address}"), 0, 3), ["5"]))
+  value = join(".", concat(slice(split(".", var.starting_address), 0, 3), ["5"]))
 }
 
 output "dns-servers" {
