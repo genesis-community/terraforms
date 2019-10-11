@@ -18,26 +18,33 @@ variable "aws_az1"        { default = "a" }
 # These are the region-specific IDs for an
 # HVM-compatible Ubuntu image:
 #
-#    ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170811
+#    ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20190913
 #
 # The username to log into the bastion is `ubuntu'
 
 variable "aws_ubuntu_ami" {
   default = {
-    ap-northeast-1 = "ami-033cdfcdd17e140cc"
-    ap-northeast-2 = "ami-0b04c9bf8abfa5b89"
-    ap-south-1     = "ami-0807bb2b5888ad68c"
-    ap-southeast-1 = "ami-012e97ef137a3f446"
-    ap-southeast-2 = "ami-0b1f854598cf629f6"
-    ca-central-1   = "ami-01428c87658222f33"
-    eu-central-1   = "ami-0dfd7cad24d571c54"
-    eu-west-1      = "ami-0aebeb281fdee5054"
-    eu-west-2      = "ami-03f2ee00e9dc6b85f"
-    sa-east-1      = "ami-0389698ad66808197"
-    us-east-1      = "ami-0977029b5b13f3d08"
-    us-east-2      = "ami-05f39e7b7f153bc6a"
-    us-west-1      = "ami-03d5270fcb641f79b"
-    us-west-2      = "ami-0f47ef92b4218ec09"
+    ap-east-1      = "ami-5cc9b22d"
+    ap-northeast-1 = "ami-0f9af249e7fa6f61b"
+    ap-northeast-2 = "ami-082bdb3b2d54d5a19"
+    ap-northeast-3 = "ami-0154a1d609dece568"
+    ap-south-1     = "ami-0927ed83617754711"
+    ap-southeast-1 = "ami-0ee0b284267ea6cde"
+    ap-southeast-2 = "ami-0328aad0f6218c429"
+    ca-central-1   = "ami-06a6f79d24f2b6a21"
+    eu-central-1   = "ami-050a22b7e0cf85dd0"
+    eu-north-1     = "ami-7dd85203"
+    eu-west-1      = "ami-03ef731cc103c9f09"
+    eu-west-2      = "ami-0fab23d0250b9a47e"
+    eu-west-3      = "ami-0bb607148d8cf36fb"
+    me-south-1     = "ami-01011404880c390bf"
+    sa-east-1      = "ami-02b235ae9b5819d3b"
+    us-east-1      = "ami-04763b3055de4860b"
+    us-east-2      = "ami-0d03add87774b12c5"
+    us-gov-east-1  = "ami-581dfd29"
+    us-gov-west-1  = "ami-339ecb52"
+    us-west-1      = "ami-0dbf5ea29a7fc7e05"
+    us-west-2      = "ami-0994c095691a46fb5"
   }
 }
 
