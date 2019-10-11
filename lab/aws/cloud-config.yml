@@ -7,6 +7,23 @@ azs:
     cloud_properties:
       availability_zone: (( grab meta.tf.cc.z1 ))
 
+vm_extensions:
+  - name: cf-load-balanced
+    cloud_properties:
+      lb_target_groups:
+        - cf-routers
+        - cf-ssh
+
+  - name: cf-elb
+    cloud_properties:
+      lb_target_groups:
+        - cf-routers
+
+  - name: ssh-elb
+    cloud_properties:
+      lb_target_groups:
+        - cf-ssh
+
 networks:
   - name: vault
     type: manual
@@ -16,10 +33,10 @@ networks:
         dns:     [(( grab meta.tf.cc.dns ))]
         azs:     [z1]
         reserved:
-          - (( concat meta.net.lab.prefix ".2 - " meta.net.lab.prefix ".4" ))
-          - (( concat meta.net.lab.prefix ".8 - " meta.net.lab.prefix ".254" ))
+          - (( concat meta.net.lab.prefix ".0.2 - " meta.net.lab.prefix ".0.4" ))
+          - (( concat meta.net.lab.prefix ".0.8 - " meta.net.lab.prefix ".15.254" ))
         static:
-          - (( concat meta.net.lab.prefix ".5 - " meta.net.lab.prefix ".7" ))
+          - (( concat meta.net.lab.prefix ".0.5 - " meta.net.lab.prefix ".0.7" ))
         cloud_properties:
           subnet: (( grab meta.net.lab.subnet ))
 
@@ -31,9 +48,70 @@ networks:
         dns:     [(( grab meta.tf.cc.dns ))]
         azs:     [z1]
         reserved:
-          - (( concat meta.net.lab.prefix ".2 - " meta.net.lab.prefix ".127" ))
+          - (( concat meta.net.lab.prefix ".0.2 - " meta.net.lab.prefix ".0.127" ))
+          - (( concat meta.net.lab.prefix ".1.0 - " meta.net.lab.prefix ".15.254" ))
         static:
-          - (( concat meta.net.lab.prefix ".128 - " meta.net.lab.prefix  ".191" ))
+          - (( concat meta.net.lab.prefix ".0.128 - " meta.net.lab.prefix  ".0.191" ))
+        cloud_properties:
+          subnet: (( grab meta.net.lab.subnet ))
+
+  - name: cf-edge
+    type: manual
+    subnets:
+      - range:   (( grab meta.net.lab.cidr ))
+        gateway: (( grab meta.net.lab.gw ))
+        dns:     [(( grab meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.lab.prefix ".0.2 - " meta.net.lab.prefix ".0.255" ))
+          - (( concat meta.net.lab.prefix ".2.0 - " meta.net.lab.prefix ".15.254" ))
+        static:
+          - (( concat meta.net.lab.prefix ".1.240 - " meta.net.lab.prefix ".1.255" ))
+        cloud_properties:
+          subnet: (( grab meta.net.lab.subnet ))
+
+  - name: cf-core
+    type: manual
+    subnets:
+      - range:   (( grab meta.net.lab.cidr ))
+        gateway: (( grab meta.net.lab.gw ))
+        dns:     [(( grab meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.lab.prefix ".0.2 - " meta.net.lab.prefix ".1.255" ))
+          - (( concat meta.net.lab.prefix ".3.0 - " meta.net.lab.prefix ".15.254" ))
+        static:
+          - (( concat meta.net.lab.prefix ".2.240 - " meta.net.lab.prefix  ".2.255" ))
+        cloud_properties:
+          subnet: (( grab meta.net.lab.subnet ))
+
+  - name: cf-db
+    type: manual
+    subnets:
+      - range:   (( grab meta.net.lab.cidr ))
+        gateway: (( grab meta.net.lab.gw ))
+        dns:     [(( grab meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.lab.prefix ".0.2 - " meta.net.lab.prefix ".2.255" ))
+          - (( concat meta.net.lab.prefix ".4.0 - " meta.net.lab.prefix ".15.254" ))
+        static:
+          - (( concat meta.net.lab.prefix ".3.240 - " meta.net.lab.prefix  ".3.255" ))
+        cloud_properties:
+          subnet: (( grab meta.net.lab.subnet ))
+
+  - name: cf-runtime
+    type: manual
+    subnets:
+      - range:   (( grab meta.net.lab.cidr ))
+        gateway: (( grab meta.net.lab.gw ))
+        dns:     [(( grab meta.tf.cc.dns ))]
+        azs:     [z1]
+        reserved:
+          - (( concat meta.net.lab.prefix ".0.2 - " meta.net.lab.prefix ".2.255" ))
+          - (( concat meta.net.lab.prefix ".5.0 - " meta.net.lab.prefix ".15.254" ))
+        static:
+          - (( concat meta.net.lab.prefix ".4.240 - " meta.net.lab.prefix  ".4.255" ))
         cloud_properties:
           subnet: (( grab meta.net.lab.subnet ))
 
@@ -50,19 +128,23 @@ disk_types:
     cloud_properties:
       type: gp2
 
-vm_types:
-  - name: default
+  - name: blobstore
+    disk_size: 65536
     cloud_properties:
-      instance_type: t2.small
-      ephemeral_disk:
-        type: gp2
-        size: 8192
+      type: gp2
+
+  - name: postgres
+    disk_size: 16384
+    cloud_properties:
+      type: gp2
+
+vm_types:
   - name: small
     cloud_properties:
       instance_type: t2.small
       ephemeral_disk:
         type: gp2
-        size: 4096
+        size: 8192
   - name: medium
     cloud_properties:
       instance_type: t2.medium
@@ -75,3 +157,48 @@ vm_types:
       ephemeral_disk:
         type: gp2
         size: 32767
+  - name: xlarge
+    cloud_properties:
+      instance_type: t2.xlarge
+      ephemeral_disk:
+        type: gp2
+        size: 65536
+
+  - name: compilation
+    cloud_properties: (( grab vm_types.xlarge.cloud_properties ))
+  - name: default
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+
+  - name: nats
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+  - name: api
+    cloud_properties: (( grab vm_types.medium.cloud_properties ))
+  - name: uaa
+    cloud_properties: (( grab vm_types.large.cloud_properties ))
+  - name: doppler
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+  - name: loggregator
+    cloud_properties: (( grab vm_types.medium.cloud_properties ))
+  - name: syslogger
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+  - name: log-api
+    cloud_properties: (( grab vm_types.medium.cloud_properties ))
+  - name: router
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+  - name: bbs
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+  - name: diego
+    cloud_properties: (( grab vm_types.medium.cloud_properties ))
+  - name: cell
+    cloud_properties:
+      instance_type: m4.xlarge
+      ephemeral_disk:
+        type: gp2
+        size: 65537
+
+  - name: errand
+    cloud_properties: (( grab vm_types.small.cloud_properties ))
+  - name: postgres
+    cloud_properties: (( grab vm_types.large.cloud_properties ))
+  - name: blobstore
+    cloud_properties: (( grab vm_types.medium.cloud_properties ))

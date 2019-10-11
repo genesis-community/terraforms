@@ -162,12 +162,11 @@ resource "aws_route_table_association" "lab" {
   subnet_id      = "${aws_subnet.lab.id}"
   route_table_id = "${aws_route_table.internal.id}"
 }
-output "aws.network.lab.prefix" { value = "${var.network}.0" }
-output "aws.network.lab.cidr"   { value = "${var.network}.0.0/24" }
+output "aws.network.lab.prefix" { value = "${var.network}" }
+output "aws.network.lab.cidr"   { value = "${var.network}.0.0/20" }
 output "aws.network.lab.gw"     { value = "${var.network}.0.1" }
 output "aws.network.lab.subnet" { value = "${aws_subnet.lab.id}" }
 output "aws.network.lab.az"     { value = "${aws_subnet.lab.availability_zone}" }
-
 
 
  ######  ########  ######          ######   ########   #######  ##     ## ########   ######
