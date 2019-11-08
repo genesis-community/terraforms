@@ -11,6 +11,7 @@ variable "aws_region"     {} # AWS Region                               (require
 
 variable "network"        { default = "10.4" }      # First 2 octets of your /16
 variable "aws_az1"        { default = "a" }
+variable "aws_az2"        { default = "b" }
 
 #
 # Generic Ubuntu AMI
@@ -147,6 +148,16 @@ resource "aws_subnet" "dmz" {
 }
 resource "aws_route_table_association" "dmz" {
   subnet_id      = "${aws_subnet.dmz.id}"
+  route_table_id = "${aws_route_table.external.id}"
+}
+resource "aws_subnet" "dmz2" {
+  vpc_id            = "${aws_vpc.lab.id}"
+  cidr_block        = "${var.network}.254.192/26"
+  availability_zone = "${var.aws_region}${var.aws_az2}"
+  tags { Name = "${var.aws_vpc_name}-dmz2" }
+}
+resource "aws_route_table_association" "dmz2" {
+  subnet_id      = "${aws_subnet.dmz2.id}"
   route_table_id = "${aws_route_table.external.id}"
 }
 
