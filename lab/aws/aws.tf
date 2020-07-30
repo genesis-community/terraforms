@@ -62,7 +62,7 @@ provider "aws" {
 resource "aws_vpc" "lab" {
   cidr_block           = "${var.network}.0.0/16"
   enable_dns_hostnames = "true"
-  tags { Name = "${var.aws_vpc_name}" }
+  tags = { Name = "${var.aws_vpc_name}" }
 }
 
 
@@ -79,13 +79,13 @@ resource "aws_nat_gateway" "nat" {
   allocation_id   = "${aws_eip.nat.id}"
   subnet_id       = "${aws_subnet.dmz.id}"
   depends_on      = ["aws_internet_gateway.gw"]
-  tags { Name = "${var.aws_vpc_name}-nat" }
+  tags = { Name = "${var.aws_vpc_name}-nat" }
 }
 resource "aws_eip" "nat" {
   vpc = true
-  tags { Name = "${var.aws_vpc_name}-nat" }
+  tags = { Name = "${var.aws_vpc_name}-nat" }
 }
-output "box.nat.public" {
+output "box-nat-public" {
   value = "${aws_eip.nat.public_ip}"
 }
 
@@ -101,11 +101,11 @@ output "box.nat.public" {
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = "${aws_vpc.lab.id}"
-  tags { Name = "${var.aws_vpc_name}-gw" }
+  tags = { Name = "${var.aws_vpc_name}-gw" }
 }
 resource "aws_route_table" "external" {
   vpc_id = "${aws_vpc.lab.id}"
-  tags { Name = "${var.aws_vpc_name}-external" }
+  tags = { Name = "${var.aws_vpc_name}-external" }
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -115,7 +115,7 @@ resource "aws_route_table" "external" {
 
 resource "aws_route_table" "internal" {
   vpc_id = "${aws_vpc.lab.id}"
-  tags { Name = "${var.aws_vpc_name}-internal" }
+  tags = { Name = "${var.aws_vpc_name}-internal" }
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -123,10 +123,10 @@ resource "aws_route_table" "internal" {
   }
 }
 
-output "cc.net"    { value = "${var.network}" }
-output "cc.dns"    { value = "${var.network}.0.2" }
-output "cc.z1"     { value = "${var.aws_region}${var.aws_az1}" }
-output "cc.region" { value = "${var.aws_region}" }
+output "cc-net"    { value = "${var.network}" }
+output "cc-dns"    { value = "${var.network}.0.2" }
+output "cc-z1"     { value = "${var.aws_region}${var.aws_az1}" }
+output "cc-region" { value = "${var.aws_region}" }
 
 
 
@@ -144,7 +144,7 @@ resource "aws_subnet" "dmz" {
   vpc_id            = "${aws_vpc.lab.id}"
   cidr_block        = "${var.network}.255.192/26"
   availability_zone = "${var.aws_region}${var.aws_az1}"
-  tags { Name = "${var.aws_vpc_name}-dmz" }
+  tags = { Name = "${var.aws_vpc_name}-dmz" }
 }
 resource "aws_route_table_association" "dmz" {
   subnet_id      = "${aws_subnet.dmz.id}"
@@ -154,7 +154,7 @@ resource "aws_subnet" "dmz2" {
   vpc_id            = "${aws_vpc.lab.id}"
   cidr_block        = "${var.network}.254.192/26"
   availability_zone = "${var.aws_region}${var.aws_az2}"
-  tags { Name = "${var.aws_vpc_name}-dmz2" }
+  tags = { Name = "${var.aws_vpc_name}-dmz2" }
 }
 resource "aws_route_table_association" "dmz2" {
   subnet_id      = "${aws_subnet.dmz2.id}"
@@ -167,17 +167,17 @@ resource "aws_subnet" "lab" {
   vpc_id            = "${aws_vpc.lab.id}"
   cidr_block        = "${var.network}.0.0/20"
   availability_zone = "${var.aws_region}${var.aws_az1}"
-  tags { Name = "${var.aws_vpc_name}-lab" }
+  tags = { Name = "${var.aws_vpc_name}-lab" }
 }
 resource "aws_route_table_association" "lab" {
   subnet_id      = "${aws_subnet.lab.id}"
   route_table_id = "${aws_route_table.internal.id}"
 }
-output "aws.network.lab.prefix" { value = "${var.network}" }
-output "aws.network.lab.cidr"   { value = "${var.network}.0.0/20" }
-output "aws.network.lab.gw"     { value = "${var.network}.0.1" }
-output "aws.network.lab.subnet" { value = "${aws_subnet.lab.id}" }
-output "aws.network.lab.az"     { value = "${aws_subnet.lab.availability_zone}" }
+output "aws-network-lab-prefix" { value = "${var.network}" }
+output "aws-network-lab-cidr"   { value = "${var.network}.0.0/20" }
+output "aws-network-lab-gw"     { value = "${var.network}.0.1" }
+output "aws-network-lab-subnet" { value = "${aws_subnet.lab.id}" }
+output "aws-network-lab-az"     { value = "${aws_subnet.lab.availability_zone}" }
 
 
  ######  ########  ######          ######   ########   #######  ##     ## ########   ######
@@ -192,7 +192,7 @@ resource "aws_security_group" "open-lab" {
   name        = "open-lab"
   description = "Allow everything in and out"
   vpc_id      = "${aws_vpc.lab.id}"
-  tags { Name = "${var.aws_vpc_name}-open-lab" }
+  tags = { Name = "${var.aws_vpc_name}-open-lab" }
 
   ingress {
     from_port   = 0
@@ -225,7 +225,7 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids      = ["${aws_security_group.open-lab.id}"]
   subnet_id                   = "${aws_subnet.dmz.id}"
   associate_public_ip_address = true
-  tags { Name = "${var.aws_vpc_name}-bastion" }
+  tags = { Name = "${var.aws_vpc_name}-bastion" }
 
   provisioner "remote-exec" {
     inline = [
@@ -233,6 +233,7 @@ resource "aws_instance" "bastion" {
       "sudo chmod 0755 /usr/local/bin/jumpbox",
     ]
     connection {
+        host = aws_instance.bastion.public_ip
         type = "ssh"
         user = "ubuntu"
         private_key = "${file("${var.aws_key_file}")}"
@@ -242,6 +243,7 @@ resource "aws_instance" "bastion" {
     source      = "files/gitconfig"
     destination = "/home/ubuntu/.gitconfig"
     connection {
+        host = aws_instance.bastion.public_ip
         type = "ssh"
         user = "ubuntu"
         private_key = "${file("${var.aws_key_file}")}"
@@ -251,6 +253,7 @@ resource "aws_instance" "bastion" {
     source      = "files/tmux.conf"
     destination = "/home/ubuntu/.tmux.conf"
     connection {
+        host = aws_instance.bastion.public_ip
         type = "ssh"
         user = "ubuntu"
         private_key = "${file("${var.aws_key_file}")}"
@@ -258,9 +261,9 @@ resource "aws_instance" "bastion" {
   }
 }
 
-output "box.bastion.public" {
+output "box-bastion-public" {
   value = "${aws_instance.bastion.public_ip}"
 }
-output "box.bastion.keyfile" {
+output "box-bastion-keyfile" {
   value = "${var.aws_key_file}"
 }
